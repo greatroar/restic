@@ -47,7 +47,7 @@ func saveFile(t testing.TB, repo restic.Repository, filename string, filesystem 
 	arch := New(repo, filesystem, Options{})
 	arch.runWorkers(ctx, &tmb)
 
-	arch.Error = func(item string, fi os.FileInfo, err error) error {
+	arch.Error = func(item string, err error) error {
 		t.Errorf("archiver error for %v: %v", item, err)
 		return err
 	}
@@ -217,7 +217,7 @@ func TestArchiverSave(t *testing.T) {
 			var tmb tomb.Tomb
 
 			arch := New(repo, fs.Track{FS: fs.Local{}}, Options{})
-			arch.Error = func(item string, fi os.FileInfo, err error) error {
+			arch.Error = func(item string, err error) error {
 				t.Errorf("archiver error for %v: %v", item, err)
 				return err
 			}
@@ -293,7 +293,7 @@ func TestArchiverSaveReaderFS(t *testing.T) {
 			var tmb tomb.Tomb
 
 			arch := New(repo, readerFs, Options{})
-			arch.Error = func(item string, fi os.FileInfo, err error) error {
+			arch.Error = func(item string, err error) error {
 				t.Errorf("archiver error for %v: %v", item, err)
 				return err
 			}
@@ -1719,7 +1719,7 @@ func TestArchiverParent(t *testing.T) {
 
 func TestArchiverErrorReporting(t *testing.T) {
 	ignoreErrorForBasename := func(basename string) ErrorFunc {
-		return func(item string, fi os.FileInfo, err error) error {
+		return func(item string, err error) error {
 			if filepath.Base(item) == "targetfile" {
 				t.Logf("ignoring error for targetfile: %v", err)
 				return nil
@@ -2243,7 +2243,7 @@ func TestRacyFileSwap(t *testing.T) {
 	var tmb tomb.Tomb
 
 	arch := New(repo, fs.Track{FS: statfs}, Options{})
-	arch.Error = func(item string, fi os.FileInfo, err error) error {
+	arch.Error = func(item string, err error) error {
 		t.Logf("archiver error as expected for %v: %v", item, err)
 		return err
 	}
