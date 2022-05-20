@@ -285,8 +285,7 @@ type FutureNode struct {
 	snPath, target string
 
 	// kept to call the error callback function
-	absTarget string
-	fi        os.FileInfo
+	fi os.FileInfo
 
 	node  *restic.Node
 	stats ItemStats
@@ -355,8 +354,6 @@ func (arch *Archiver) Save(ctx context.Context, snPath, target string, previous 
 	if err != nil {
 		return FutureNode{}, false, err
 	}
-
-	fn.absTarget = abstarget
 
 	// exclude files by path before running Lstat to reduce number of lstat calls
 	if !arch.SelectByName(abstarget) {
