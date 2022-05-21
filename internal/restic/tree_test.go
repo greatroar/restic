@@ -94,6 +94,28 @@ func TestNodeComparison(t *testing.T) {
 	rtest.Assert(t, !node.Equals(n2), "nodes are equal")
 }
 
+func TestTreeEqualSerialization(t *testing.T) {
+	fi, err := os.Lstat("tree_test.go")
+	rtest.OK(t, err)
+
+	node, err := restic.NodeFromFileInfo("tree_test.go", fi)
+	rtest.OK(t, err)
+
+	tree := restic.NewTree(1)
+	rtest.OK(t, tree.Insert(node))
+	treeBytes, err := json.Marshal(tree)
+	treeBytes = append(treeBytes, '\n')
+	rtest.OK(t, err)
+
+	builder := restic.NewTreeBuilder()
+	rtest.OK(t, builder.AddNode(node))
+	stiBytes, err := builder.Finalize()
+	rtest.OK(t, err)
+
+	// compare serialization of an individual node and the SaveTreeIterator
+	rtest.Equals(t, treeBytes, stiBytes)
+}
+
 func TestLoadTree(t *testing.T) {
 	repo, cleanup := repository.TestRepository(t)
 	defer cleanup()

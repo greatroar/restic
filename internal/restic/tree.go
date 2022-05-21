@@ -1,6 +1,8 @@
 package restic
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"sort"
 
@@ -97,4 +99,64 @@ func (t *Tree) Subtrees() (trees IDs) {
 	}
 
 	return trees
+}
+
+type TreeBuilder struct {
+	buf      *bytes.Buffer
+	lastName string
+}
+
+func NewTreeBuilder() *TreeBuilder {
+	var buf bytes.Buffer
+	_, err := buf.Write([]byte(`{"nodes":[`))
+	if err != nil {
+		panic(err)
+	}
+	return &TreeBuilder{
+		buf: &buf,
+	}
+}
+
+func (builder *TreeBuilder) AddNode(node *Node) error {
+	if builder.lastName != "" {
+		err := builder.buf.WriteByte(',')
+		if err != nil {
+			return err
+		}
+	}
+	if node.Name <= builder.lastName {
+		return errors.Errorf("nodes are not ordered got %q, last %q", node.Name, builder.lastName)
+	}
+	builder.lastName = node.Name
+
+	val, err := json.Marshal(node)
+	if err != nil {
+		return err
+	}
+	_, err = builder.buf.Write(val)
+	return err
+}
+
+func (builder *TreeBuilder) Finalize() ([]byte, error) {
+	// append a newline so that the data is always consistent (json.Encoder
+	// adds a newline after each object)
+	_, err := builder.buf.Write([]byte("]}\n"))
+	if err != nil {
+		return nil, err
+	}
+	buf := builder.buf.Bytes()
+	// drop reference to buffer
+	builder.buf = nil
+	return buf, nil
+}
+
+func TreeToBuilder(t *Tree) (*TreeBuilder, error) {
+	builder := NewTreeBuilder()
+	for _, node := range t.Nodes {
+		err := builder.AddNode(node)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return builder, nil
 }
