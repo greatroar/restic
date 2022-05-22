@@ -175,16 +175,16 @@ func (arch *Archiver) saveTree(ctx context.Context, t *restic.TreeBuilder) (rest
 	b := &Buffer{Data: buf}
 	res := arch.blobSaver.Save(ctx, restic.TreeBlob, b)
 
-	res.Wait(ctx)
-	if !res.Known() {
+	sbr := res.Take(ctx)
+	if !sbr.known {
 		s.TreeBlobs++
-		s.TreeSize += uint64(len(buf))
+		s.TreeSize += uint64(sbr.length)
 	}
-	// The context was canceled in the meantime, res.ID() might be invalid
+	// The context was canceled in the meantime, id might be invalid
 	if ctx.Err() != nil {
 		return restic.ID{}, s, ctx.Err()
 	}
-	return res.ID(), s, nil
+	return sbr.id, s, nil
 }
 
 // nodeFromFileInfo returns the restic node from an os.FileInfo.
