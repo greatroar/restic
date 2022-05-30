@@ -102,19 +102,14 @@ func (t *Tree) Subtrees() (trees IDs) {
 }
 
 type TreeBuilder struct {
-	buf      *bytes.Buffer
+	buf      bytes.Buffer
 	lastName string
 }
 
 func NewTreeBuilder() *TreeBuilder {
-	var buf bytes.Buffer
-	_, err := buf.Write([]byte(`{"nodes":[`))
-	if err != nil {
-		panic(err)
-	}
-	return &TreeBuilder{
-		buf: &buf,
-	}
+	tb := new(TreeBuilder)
+	_, _ = tb.buf.WriteString(`{"nodes":[`)
+	return tb
 }
 
 func (builder *TreeBuilder) AddNode(node *Node) error {
@@ -137,17 +132,14 @@ func (builder *TreeBuilder) AddNode(node *Node) error {
 	return err
 }
 
-func (builder *TreeBuilder) Finalize() ([]byte, error) {
+func (builder *TreeBuilder) Finalize() []byte {
 	// append a newline so that the data is always consistent (json.Encoder
 	// adds a newline after each object)
-	_, err := builder.buf.Write([]byte("]}\n"))
-	if err != nil {
-		return nil, err
-	}
+	_, _ = builder.buf.WriteString("]}\n")
 	buf := builder.buf.Bytes()
 	// drop reference to buffer
-	builder.buf = nil
-	return buf, nil
+	builder.buf = bytes.Buffer{}
+	return buf
 }
 
 func TreeToBuilder(t *Tree) (*TreeBuilder, error) {

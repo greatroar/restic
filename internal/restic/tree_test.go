@@ -109,11 +109,9 @@ func TestTreeEqualSerialization(t *testing.T) {
 
 	builder := restic.NewTreeBuilder()
 	rtest.OK(t, builder.AddNode(node))
-	stiBytes, err := builder.Finalize()
-	rtest.OK(t, err)
 
 	// compare serialization of an individual node and the SaveTreeIterator
-	rtest.Equals(t, treeBytes, stiBytes)
+	rtest.Equals(t, treeBytes, builder.Finalize())
 }
 
 func TestLoadTree(t *testing.T) {

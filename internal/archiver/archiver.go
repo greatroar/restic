@@ -167,10 +167,7 @@ func (arch *Archiver) error(item string, err error) error {
 // before saving anything.
 func (arch *Archiver) saveTree(ctx context.Context, t *restic.TreeBuilder) (restic.ID, ItemStats, error) {
 	var s ItemStats
-	buf, err := t.Finalize()
-	if err != nil {
-		return restic.ID{}, s, err
-	}
+	buf := t.Finalize()
 
 	b := &Buffer{Data: buf}
 	res := arch.blobSaver.Save(ctx, restic.TreeBlob, b)
