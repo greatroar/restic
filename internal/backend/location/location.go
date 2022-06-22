@@ -1,4 +1,3 @@
-// Package location implements parsing the restic repository location from a string.
 package location
 
 import (
@@ -16,9 +15,9 @@ import (
 	"github.com/restic/restic/internal/errors"
 )
 
-// Location specifies the location of a repository, including the method of
+// A location specifies the location of a repository, including the method of
 // access and (possibly) credentials needed for access.
-type Location struct {
+type location struct {
 	Scheme string
 	Config interface{}
 }
@@ -78,11 +77,12 @@ func isPath(s string) bool {
 	return true
 }
 
-// Parse extracts repository location information from the string s. If s
-// starts with a backend name followed by a colon, that backend's Parse()
+// parseLocation extracts repository location information from the string s.
+//
+// If s starts with a backend name followed by a colon, that backend's Parse()
 // function is called. Otherwise, the local backend is used which interprets s
 // as the name of a directory.
-func Parse(s string) (u Location, err error) {
+func parseLocation(s string) (u location, err error) {
 	scheme := extractScheme(s)
 	u.Scheme = scheme
 
@@ -93,7 +93,7 @@ func Parse(s string) (u Location, err error) {
 
 		u.Config, err = parser.parse(s)
 		if err != nil {
-			return Location{}, err
+			return location{}, err
 		}
 
 		return u, nil
@@ -101,13 +101,13 @@ func Parse(s string) (u Location, err error) {
 
 	// if s is not a path or contains ":", it's ambiguous
 	if !isPath(s) && strings.ContainsRune(s, ':') {
-		return Location{}, errors.New("invalid backend\nIf the repo is in a local directory, you need to add a `local:` prefix")
+		return location{}, errors.New("invalid backend\nIf the repo is in a local directory, you need to add a `local:` prefix")
 	}
 
 	u.Scheme = "local"
 	u.Config, err = local.ParseConfig("local:" + s)
 	if err != nil {
-		return Location{}, err
+		return location{}, err
 	}
 
 	return u, nil

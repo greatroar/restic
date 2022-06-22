@@ -81,7 +81,7 @@ func runInit(opts InitOptions, gopts GlobalOptions, args []string) error {
 		return err
 	}
 
-	be, err := create(repo, gopts.extended)
+	be, err := location.Create(gopts.ctx, repo, gopts.extended, gopts.TransportOptions)
 	if err != nil {
 		return errors.Fatalf("create repository at %s failed: %v\n", location.StripPassword(gopts.Repo), err)
 	}
