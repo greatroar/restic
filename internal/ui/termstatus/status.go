@@ -360,6 +360,8 @@ func (t *Terminal) SetStatus(lines []string) {
 		}
 		if i < len(lines)-1 { // Last line gets no line break.
 			lines[i] = line + "\n"
+		} else {
+			lines[i] = line
 		}
 	}
 
