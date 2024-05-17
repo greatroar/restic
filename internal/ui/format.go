@@ -11,19 +11,28 @@ import (
 )
 
 func FormatBytes(c uint64) string {
-	b := float64(c)
+	s := make([]byte, 0, 16)
+
+	shift, unit := 0, ""
 	switch {
 	case c >= 1<<40:
-		return fmt.Sprintf("%.3f TiB", b/(1<<40))
+		shift, unit = 40, " TiB"
 	case c >= 1<<30:
-		return fmt.Sprintf("%.3f GiB", b/(1<<30))
+		shift, unit = 30, " GiB"
 	case c >= 1<<20:
-		return fmt.Sprintf("%.3f MiB", b/(1<<20))
+		shift, unit = 20, " MiB"
 	case c >= 1<<10:
-		return fmt.Sprintf("%.3f KiB", b/(1<<10))
+		shift, unit = 10, " KiB"
 	default:
-		return fmt.Sprintf("%d B", c)
+		s = strconv.AppendUint(s, c, 10)
+		s = append(s, " B"...)
+		return string(s)
 	}
+
+	b := float64(c) / float64(int(1)<<shift)
+	s = strconv.AppendFloat(s, b, 'f', 3, 64)
+	s = append(s, unit...)
+	return string(s)
 }
 
 // FormatPercent formats numerator/denominator as a percentage.

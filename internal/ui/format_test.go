@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/restic/restic/internal/test"
@@ -23,6 +24,16 @@ func TestFormatBytes(t *testing.T) {
 		if got := FormatBytes(c.size); got != c.want {
 			t.Errorf("want %q, got %q", c.want, got)
 		}
+	}
+}
+
+func BenchmarkFormatBytes(b *testing.B) {
+	r := rand.New(rand.NewSource(0xabcdef1234))
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		FormatBytes(r.Uint64())
 	}
 }
 
